@@ -1,5 +1,12 @@
 const { firstAgent, secondAgent } = require("./gpt-service.js");
 const { api: hueApi } = require("node-hue-api").v3;
+const chalkOriginal = import("chalk").then(m => m.default);
+
+// const chalk = require("chalk");
+// import chalk from "chalk";
+// import { firstAgent, secondAgent } from "./gpt-service.js";
+// import test from "node-hue-api";
+// console.log("test", test);
 
 class HueService {
   constructor(username, ipAddress) {
@@ -19,6 +26,16 @@ class HueService {
     return await this.API.lights.getAll();
   }
 }
+
+const logWithTimestamp = message => {
+  const timestamp = new Date().toLocaleTimeString();
+  console.log(`[${timestamp}] ${message}`);
+};
+
+const logResponse = async (agent, response) => {
+  const chalk = await chalkOriginal;
+  logWithTimestamp(chalk.blue(`${agent} Response: `) + chalk.green(response));
+};
 
 const parseColorIntensity = colorIntensity => {
   const [color, intensity] = colorIntensity.trim().split(" ").map(Number);
@@ -94,28 +111,39 @@ const philipsHueTest = async () => {
 
   const inputPrompt = process.argv[2];
   const firstAgentResponse = await firstAgent(inputPrompt);
+  await logResponse(
+    "First Agent",
+    `Received color settings: ${firstAgentResponse}`
+  );
 
   const secondAgentResponse = await secondAgent(
     inputPrompt,
     firstAgentResponse
+  );
+  await logResponse(
+    "Second Agent",
+    `Adjusted color settings based on input: ${secondAgentResponse}`
   );
 
   const finalColors = processSecondAgentResponse(secondAgentResponse);
 
   const colors = finalColors.replace(/"/g, "").trim().split(",");
 
+  const chalk = await chalkOriginal;
+
   const lights = await hueService.getAllLights();
   if (lights.length < 2) {
-    console.error("Se necesitan al menos 2 focos para continuar.");
+    logWithTimestamp(
+      chalk.red("Error: Se necesitan al menos 2 focos para continuar.")
+    );
     return;
   }
 
   await updateLightColors(hueService, lights, colors);
+  logWithTimestamp(chalk.green("Done!"));
 };
 
-philipsHueTest().then(() => {
-  console.log("Done!");
-});
+philipsHueTest().then(() => {});
 
 const getXYPointFromRGB = ({ redI, greenI, blueI }) => {
   // Normalización de los valores RGB

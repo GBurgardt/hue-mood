@@ -20,7 +20,7 @@ const firstAgent = async textolibre => {
     },
   ];
 
-  console.log("messages", messages);
+  // console.log("messages", messages);
 
   const body = {
     model: "gpt-4-0613",
@@ -43,7 +43,6 @@ const firstAgent = async textolibre => {
   }
 };
 
-// validateAndCorrectColors
 const secondAgent = async (inputPrompt, agent1Response) => {
   const url = "https://api.openai.com/v1/chat/completions";
 
@@ -63,20 +62,6 @@ const secondAgent = async (inputPrompt, agent1Response) => {
         "Eres un asistente que evalúa y corrige respuestas sobre configuraciones de iluminación basadas en descripciones de ambientes. Tu principal tarea es asegurar que las respuestas sigan un formato estandarizado 'color1 intensidad1, color2 intensidad2' para facilitar su procesamiento posterior. Después de los valores, puedes añadir explicaciones si son necesarias.",
     },
   ];
-
-  // const messages = [
-  //   {
-  //     role: "user",
-  //     content: `Como agente especializado en iluminación, necesito que evalúes y corrijas si es necesario la siguiente respuesta. Antes de eso, es importante entender cómo interpretar el círculo de colores. El círculo de colores es: {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}. Los números representan diferentes colores en el espectro. Por ejemplo, '0' es rojo puro, '30' es naranja, etc. Con este entendimiento, el prompt original es: '${inputPrompt}'. La respuesta del primer agente es: '${agent1Response}'. Basándote en el prompt y el círculo de colores, ¿la respuesta es adecuada? Si no lo es, corrígela manteniendo el formato 'Color1 Intensidad1, Color2 Intensidad2'.\n\nEjemplo:\n\nInput: Estás en una habitación oscura con una sola vela encendida.\nRespuesta Agente 1: '61 90, 216 40'\nCorrección: '40 5, 0 0' (40 representando la luz tenue de la vela y 0 0 indicando oscuridad completa en el resto de la habitación)\nColor Corregido:`,
-  //   },
-  //   {
-  //     role: "system",
-  //     content:
-  //       "Eres un asistente que evalúa y corrige respuestas sobre configuraciones de iluminación basadas en descripciones de ambientes. Debes revisar si las respuestas del primer agente son coherentes con el prompt dado y, de no serlo, proporcionar una corrección manteniendo el formato 'color1 intensidad1, color2 intensidad2', considerando el círculo de colores.",
-  //   },
-  // ];
-
-  console.log("messages", messages);
 
   const body = {
     model: "gpt-4-0613",
@@ -100,6 +85,6 @@ const secondAgent = async (inputPrompt, agent1Response) => {
 };
 
 module.exports = {
-  firstAgent: firstAgent,
-  secondAgent: secondAgent,
+  firstAgent,
+  secondAgent,
 };
