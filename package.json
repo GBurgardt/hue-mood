@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "node-hue-api": "^5.0.0-beta.16"
+  },
+  "name": "gpt-philips-hue",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
