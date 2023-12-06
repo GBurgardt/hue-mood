@@ -1,4 +1,4 @@
-const { environmentToColors } = require("./gpt-service.js");
+const { firstAgent, secondAgent } = require("./gpt-service.js");
 const { api: hueApi } = require("node-hue-api").v3;
 
 class HueService {
@@ -30,10 +30,60 @@ const parseColorIntensity = colorIntensity => {
 const updateLightColors = async (hueService, lights, colors) => {
   for (let i = 0; i < lights.length && i < colors.length; i++) {
     const { hue, brightness } = parseColorIntensity(colors[i]);
+
+    if (brightness === 0) {
+      await turnOffLights(hueService, lights);
+      return;
+    }
+
     const state = { on: true, bri: brightness, hue };
+
     await hueService.setLightState(lights[i].id, state);
   }
 };
+
+const setMinimumBrightness = async (hueService, lights) => {
+  const state = { on: true, bri: 1 };
+  await hueService.setLightState(lights[0].id, state);
+};
+
+const turnOffLights = async (hueService, lights) => {
+  const state = { on: false };
+  await hueService.setLightState(lights[0].id, state);
+};
+
+const toggleBrightness = async (hueService, lights) => {
+  let brightness = 1;
+  let increasing = true;
+
+  const interval = setInterval(async () => {
+    const state = { on: true, bri: brightness };
+    await hueService.setLightState(lights[0].id, state);
+
+    if (increasing) {
+      brightness += 5;
+      if (brightness >= 254) {
+        // Asegurarse de no exceder el máximo
+        brightness = 254;
+        increasing = false;
+      }
+    } else {
+      brightness -= 5;
+      if (brightness <= 1) {
+        // Asegurarse de no caer por debajo del mínimo
+        brightness = 1;
+        increasing = true;
+      }
+    }
+  }, 1000); // Cambia el brillo cada segundo
+};
+
+function processSecondAgentResponse(respuestaAgente) {
+  const patron = /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
+  const coincidencia = respuestaAgente.match(patron);
+
+  return coincidencia ? coincidencia[0] : null;
+}
 
 const philipsHueTest = async () => {
   const hueService = new HueService(
@@ -43,10 +93,16 @@ const philipsHueTest = async () => {
   await hueService.connect();
 
   const inputPrompt = process.argv[2];
-  const colors = (await environmentToColors(inputPrompt))
-    .replace(/"/g, "")
-    .trim()
-    .split(",");
+  const firstAgentResponse = await firstAgent(inputPrompt);
+
+  const secondAgentResponse = await secondAgent(
+    inputPrompt,
+    firstAgentResponse
+  );
+
+  const finalColors = processSecondAgentResponse(secondAgentResponse);
+
+  const colors = finalColors.replace(/"/g, "").trim().split(",");
 
   const lights = await hueService.getAllLights();
   if (lights.length < 2) {
@@ -61,6 +117,43 @@ philipsHueTest().then(() => {
   console.log("Done!");
 });
 
+const getXYPointFromRGB = ({ redI, greenI, blueI }) => {
+  // Normalización de los valores RGB
+  let red = redI / 255.0;
+  let green = greenI / 255.0;
+  let blue = blueI / 255.0;
+
+  // Corrección gamma
+  red =
+    red > 0.04045 ? Math.pow((red + 0.055) / (1.0 + 0.055), 2.4) : red / 12.92;
+  green =
+    green > 0.04045
+      ? Math.pow((green + 0.055) / (1.0 + 0.055), 2.4)
+      : green / 12.92;
+  blue =
+    blue > 0.04045
+      ? Math.pow((blue + 0.055) / (1.0 + 0.055), 2.4)
+      : blue / 12.92;
+
+  // Conversión a espacio de color XYZ
+  let X = red * 0.664511 + green * 0.154324 + blue * 0.162028;
+  let Y = red * 0.283881 + green * 0.668433 + blue * 0.047685;
+  let Z = red * 0.000088 + green * 0.07231 + blue * 0.986039;
+
+  // Conversión a coordenadas CIE 1931 xy
+  let cx = X / (X + Y + Z);
+  let cy = Y / (X + Y + Z);
+
+  // Representación del punto XY
+  let xyPoint = { x: cx, y: cy };
+
+  // Aquí se deberían agregar las verificaciones y correcciones, si es necesario
+  // Por ejemplo, checkPointInLampsReach y getClosestPointToPoint en la versión Python.
+  // Estas funciones deberían ser implementadas de acuerdo a las especificaciones del dispositivo.
+
+  // return xyPoint;
+  // return como string tipo "
+};
 // const { api: hueApi } = require("node-hue-api").v3;
 
 // class HueService {
