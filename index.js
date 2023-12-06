@@ -27,7 +27,6 @@ const parseColorIntensity = colorIntensity => {
     brightness: Math.round((intensity / 100) * 254),
   };
 };
-
 const updateLightColors = async (hueService, lights, colors) => {
   for (let i = 0; i < lights.length && i < colors.length; i++) {
     const { hue, brightness } = parseColorIntensity(colors[i]);
