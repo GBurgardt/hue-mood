@@ -25,6 +25,35 @@ class HueService {
   }
 }
 
+const setMinimumBrightness = async (hueService, lights) => {
+  const state = { on: true, bri: 1 };
+  await hueService.setLightState(lights[0].id, state);
+};
+
+const toggleBrightness = async (hueService, lights) => {
+  let brightness = 1;
+  let increasing = true;
+
+  const interval = setInterval(async () => {
+    const state = { on: true, bri: brightness };
+    await hueService.setLightState(lights[0].id, state);
+
+    if (increasing) {
+      brightness += 5;
+      if (brightness >= 254) {
+        brightness = 254;
+        increasing = false;
+      }
+    } else {
+      brightness -= 5;
+      if (brightness <= 1) {
+        brightness = 1;
+        increasing = true;
+      }
+    }
+  }, 1000);
+};
+
 const logWithTimestamp = message => {
   const timestamp = new Date().toLocaleTimeString();
   console.log(`[${timestamp}] ${message}`);
@@ -57,40 +86,9 @@ const updateLightColors = async (hueService, lights, colors) => {
   }
 };
 
-const setMinimumBrightness = async (hueService, lights) => {
-  const state = { on: true, bri: 1 };
-  await hueService.setLightState(lights[0].id, state);
-};
-
 const turnOffLights = async (hueService, lights) => {
   const state = { on: false };
   await hueService.setLightState(lights[0].id, state);
-};
-
-const toggleBrightness = async (hueService, lights) => {
-  let brightness = 1;
-  let increasing = true;
-
-  const interval = setInterval(async () => {
-    const state = { on: true, bri: brightness };
-    await hueService.setLightState(lights[0].id, state);
-
-    if (increasing) {
-      brightness += 5;
-      if (brightness >= 254) {
-        // Asegurarse de no exceder el máximo
-        brightness = 254;
-        increasing = false;
-      }
-    } else {
-      brightness -= 5;
-      if (brightness <= 1) {
-        // Asegurarse de no caer por debajo del mínimo
-        brightness = 1;
-        increasing = true;
-      }
-    }
-  }, 1000); // Cambia el brillo cada segundo
 };
 
 function processSecondAgentResponse(respuestaAgente) {
