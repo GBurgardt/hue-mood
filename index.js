@@ -92,7 +92,8 @@ const turnOffLights = async (hueService, lights) => {
 };
 
 function processSecondAgentResponse(respuestaAgente) {
-  const patron = /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
+  // Actualizado para capturar tres colores/intensidades
+  const patron = /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
   const coincidencia = respuestaAgente.match(patron);
 
   return coincidencia ? coincidencia[0] : null;
@@ -130,9 +131,10 @@ const philipsHueTest = async () => {
   const chalk = await chalkOriginal;
 
   const lights = await hueService.getAllLights();
-  if (lights.length < 2) {
+
+  if (lights.length < 3) {
     logWithTimestamp(
-      chalk.red("Error: Se necesitan al menos 2 focos para continuar.")
+      chalk.red("Error: Se necesitan al menos 3 focos para continuar.")
     );
     return;
   }
