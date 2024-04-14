@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+
 require("dotenv").config();
 const { firstAgent, secondAgent } = require("./gpt-service.js");
 const { api: hueApi } = require("node-hue-api").v3;
@@ -8,6 +9,7 @@ class HueService {
   constructor(username, ipAddress) {
     this.username = username;
     this.ipAddress = ipAddress;
+    this.API = null;
   }
 
   async connect() {
@@ -15,42 +17,19 @@ class HueService {
   }
 
   async setLightState(lightId, state) {
+    if (!this.API) {
+      throw new Error("HueService not connected. Call connect() first.");
+    }
     return await this.API.lights.setLightState(lightId, state);
   }
 
   async getAllLights() {
+    if (!this.API) {
+      throw new Error("HueService not connected. Call connect() first.");
+    }
     return await this.API.lights.getAll();
   }
 }
-
-const setMinimumBrightness = async (hueService, lights) => {
-  const state = { on: true, bri: 1 };
-  await hueService.setLightState(lights[0].id, state);
-};
-
-const toggleBrightness = async (hueService, lights) => {
-  let brightness = 1;
-  let increasing = true;
-
-  const interval = setInterval(async () => {
-    const state = { on: true, bri: brightness };
-    await hueService.setLightState(lights[0].id, state);
-
-    if (increasing) {
-      brightness += 5;
-      if (brightness >= 254) {
-        brightness = 254;
-        increasing = false;
-      }
-    } else {
-      brightness -= 5;
-      if (brightness <= 1) {
-        brightness = 1;
-        increasing = true;
-      }
-    }
-  }, 1000);
-};
 
 const logWithTimestamp = message => {
   const timestamp = new Date().toLocaleTimeString();
@@ -73,25 +52,17 @@ const parseColorIntensity = colorIntensity => {
 const updateLightColors = async (hueService, lights, colors) => {
   for (let i = 0; i < lights.length && i < colors.length; i++) {
     const { hue, brightness } = parseColorIntensity(colors[i]);
-    if (brightness === 0) {
-      await turnOffLights(hueService, lights);
-      return;
-    }
-    const state = { on: true, bri: brightness, hue };
+    const state = { on: brightness > 0, bri: brightness, hue };
     await hueService.setLightState(lights[i].id, state);
   }
 };
 
-const turnOffLights = async (hueService, lights) => {
-  const state = { on: false };
-  await hueService.setLightState(lights[0].id, state);
+const processSecondAgentResponse = response => {
+  const colorPattern =
+    /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
+  const match = response.match(colorPattern);
+  return match ? match[0].replace(/"/g, "").trim().split(",") : [];
 };
-
-function processSecondAgentResponse(respuestaAgente) {
-  const patron = /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
-  const coincidencia = respuestaAgente.match(patron);
-  return coincidencia ? coincidencia[0] : null;
-}
 
 const philipsHueTest = async () => {
   const hueService = new HueService(
@@ -116,11 +87,10 @@ const philipsHueTest = async () => {
     `Adjusted color settings based on input: ${secondAgentResponse}`
   );
 
-  const finalColors = processSecondAgentResponse(secondAgentResponse);
-  const colors = finalColors.replace(/"/g, "").trim().split(",");
+  const colors = processSecondAgentResponse(secondAgentResponse);
   const chalk = await chalkOriginal;
-
   const lights = await hueService.getAllLights();
+
   if (lights.length < 3) {
     logWithTimestamp(
       chalk.red("Error: Se necesitan al menos 3 focos para continuar.")
@@ -132,4 +102,6 @@ const philipsHueTest = async () => {
   logWithTimestamp(chalk.green("Done!"));
 };
 
-philipsHueTest().then(() => {});
+philipsHueTest().catch(error => {
+  console.error("An error occurred:", error);
+});
