@@ -50,11 +50,12 @@ const parseColorIntensity = colorIntensity => {
 };
 
 const updateLightColors = async (hueService, lights, colors) => {
-  for (let i = 0; i < lights.length && i < colors.length; i++) {
-    const { hue, brightness } = parseColorIntensity(colors[i]);
+  const updatePromises = lights.slice(0, colors.length).map((light, index) => {
+    const { hue, brightness } = parseColorIntensity(colors[index]);
     const state = { on: brightness > 0, bri: brightness, hue };
-    await hueService.setLightState(lights[i].id, state);
-  }
+    return hueService.setLightState(light.id, state);
+  });
+  await Promise.all(updatePromises);
 };
 
 const processSecondAgentResponse = response => {
