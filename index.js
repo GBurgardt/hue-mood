@@ -1,7 +1,5 @@
 #!/usr/bin/env node
-
 require("dotenv").config();
-
 const { firstAgent, secondAgent } = require("./gpt-service.js");
 const { api: hueApi } = require("node-hue-api").v3;
 const chalkOriginal = import("chalk").then(m => m.default);
@@ -71,17 +69,15 @@ const parseColorIntensity = colorIntensity => {
     brightness: Math.round((intensity / 100) * 254),
   };
 };
+
 const updateLightColors = async (hueService, lights, colors) => {
   for (let i = 0; i < lights.length && i < colors.length; i++) {
     const { hue, brightness } = parseColorIntensity(colors[i]);
-
     if (brightness === 0) {
       await turnOffLights(hueService, lights);
       return;
     }
-
     const state = { on: true, bri: brightness, hue };
-
     await hueService.setLightState(lights[i].id, state);
   }
 };
@@ -92,17 +88,13 @@ const turnOffLights = async (hueService, lights) => {
 };
 
 function processSecondAgentResponse(respuestaAgente) {
-  // Actualizado para capturar tres colores/intensidades
   const patron = /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
   const coincidencia = respuestaAgente.match(patron);
-
   return coincidencia ? coincidencia[0] : null;
 }
 
 const philipsHueTest = async () => {
   const hueService = new HueService(
-    // "GesIZHgaAc4JF1BppESBpNg7D9Kk7LFtvAUiHCGr",
-    // "192.168.1.2"
     process.env.PHILIPS_HUE_KEY,
     process.env.PHILIPS_HUE_IP
   );
@@ -125,13 +117,10 @@ const philipsHueTest = async () => {
   );
 
   const finalColors = processSecondAgentResponse(secondAgentResponse);
-
   const colors = finalColors.replace(/"/g, "").trim().split(",");
-
   const chalk = await chalkOriginal;
 
   const lights = await hueService.getAllLights();
-
   if (lights.length < 3) {
     logWithTimestamp(
       chalk.red("Error: Se necesitan al menos 3 focos para continuar.")
