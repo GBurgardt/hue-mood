@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 require("dotenv").config();
 
-const { firstAgent, secondAgent } = require("./src/gpt-service.js");
+const { firstAgent, secondAgent } = require("./src/agents/mood-song-agent.js");
 const { HueService } = require("./src/hue-service.js");
 const { logWithTimestamp, logResponse } = require("./src/logger.js");
 const { processSecondAgentResponse } = require("./src/utils.js");
