@@ -13,7 +13,7 @@ const { processSecondAgentResponse } = require("./utils");
 const { logResponse, logWithTimestamp } = require("./logger.js");
 const chalkOriginal = import("chalk").then(m => m.default);
 
-const SEGMENT_DURATION = 5000;
+const SEGMENT_DURATION = 2000;
 
 class AudioRecorder {
   constructor(micConfig, outputFolder) {
@@ -99,16 +99,16 @@ class AudioRecorder {
       const groqSynesthesiaAgent = new GroqSynesthesiaAgent();
       const agentResponse = await groqSynesthesiaAgent.processInput({
         input: transcription,
+        previousColors: this.previousColors,
       });
-      //   const agentResponse = await this.groqSynesthesiaAgent.processInput({
-      //     input: transcription,
-      //   });
+
       await logResponse(
         "Synesthesia Agent",
         `Received color settings: ${agentResponse}`
       );
 
       const colors = processSecondAgentResponse(agentResponse);
+      this.previousColors = colors.join(", "); // Guardar los colores actuales para el próximo segmento
       const chalk = await chalkOriginal;
       const lights = await this.hueService.getAllLights();
 
