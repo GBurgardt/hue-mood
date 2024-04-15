@@ -13,7 +13,7 @@ const { processSecondAgentResponse } = require("./utils");
 const { logResponse, logWithTimestamp } = require("./logger.js");
 const chalkOriginal = import("chalk").then(m => m.default);
 
-const SEGMENT_DURATION = 5000; // Duración de cada segmento de audio en milisegundos
+const SEGMENT_DURATION = 5000;
 
 class AudioRecorder {
   constructor(micConfig, outputFolder) {

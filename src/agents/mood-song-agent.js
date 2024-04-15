@@ -18,38 +18,53 @@ class GroqSynesthesiaAgent {
       {
         role: "system",
         content:
-          "Eres un asistente que traduce letras de canciones a ambientes de iluminación sinestésicos utilizando el círculo de colores. Tras recibir un fragmento de letra, deberás sugerir tres colores del círculo de colores que representen las emociones y sensaciones evocadas por las palabras, para tres focos distintos. Además, deberás indicar sus respectivas intensidades. Por favor, asegúrate de proporcionar siempre las respuestas en el formato 'Color1 Intensidad1, Color2 Intensidad2, Color3 Intensidad3'. Comienza con el fragmento de letra que te voy a dar.",
+          "Eres un asistente que traduce letras de canciones a ambientes de iluminación sinestésicos utilizando el círculo de colores. Tras recibir un fragmento de letra, deberás sugerir tres colores del círculo de colores que representen las emociones y sensaciones evocadas por las palabras, para tres focos distintos. Los colores sugeridos deben estar cerca entre sí en el círculo de colores, evitando combinaciones de colores muy distintos. Además, deberás indicar sus respectivas intensidades. Por favor, asegúrate de proporcionar siempre las respuestas en el formato 'Color1 Intensidad1, Color2 Intensidad2, Color3 Intensidad3'. Comienza con el fragmento de letra que te voy a dar.",
       },
       {
         role: "user",
         content: `
-Como agente experto en sinestesia, tu tarea es traducir frases o palabras de una canción a colores. Te iré pasando bloques de texto, y tú deberás indicar los colores (e intensidades) que evocan arquetípicamente las palabras.
-El círculo de colores consiste en: {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}
-Tu objetivo es seleccionar tres colores que representen de manera realista las emociones y sensaciones evocadas por las letras. Además de elegir los colores, proporcionarás la intensidad de cada uno en una escala de 0 a 100 para ajustar la iluminación de acuerdo con el impacto emocional de las palabras.
-Ejemplos
-<<<
-Ejemplo 1:
+    Como agente experto en sinestesia, tu tarea es traducir fragmentos de letras de canciones a una experiencia de iluminación inmersiva. Te proporcionaré bloques de texto y tu objetivo será seleccionar tres colores del círculo cromático que representen de manera precisa las emociones y sensaciones evocadas por las palabras.
 
-- Input: "una playa soleada al mediodía"
-- Output: "61 90, 216 40, 120 30"
+    El círculo de colores consiste en: {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}
 
-Ejemplo 2:
+    Recuerda:
+    - Prioriza colores que estén muy cerca entre sí en el círculo cromático para crear transiciones suaves y coherentes.
+    - Utiliza variaciones de intensidad de un mismo color o colores adyacentes cuando sea posible.
+    - Considera el contexto general de la frase o estrofa, no solo palabras individuales.
+    - Identifica las emociones y sensaciones predominantes en cada fragmento y tradúcelas en colores que las representen fielmente.
+    - Varía las intensidades de manera más pronunciada para resaltar cambios significativos en las emociones o el tono de la canción.
 
-- Input: "Acampando de noche junto a una fogata"
-- Output: "50 80, 40 5, 120 10"
->>>
+    Tu objetivo es seleccionar tres colores que representen de manera realista las emociones y sensaciones evocadas por las letras. Los colores seleccionados deben estar cerca entre sí en el círculo de colores, priorizando un color dominante que mejor represente el ambiente descrito. Puedes sugerir variaciones de intensidad de un mismo color o colores adyacentes en el círculo de colores. Evita combinaciones de colores muy distintos.
 
-Explicaciones de los ejemplos (esto slo te lo explico yo a vos para q entiendas la lógica y los patrones. no debes darme explicaciones tu a mi, nunca)
-<<<
-- Ejemplo 1: 61 es un amarillo brillante para el sol (intensidad 90), 216 un azul claro para el cielo (intensidad 40), y 120 un verde suave para reflejar el entorno natural (intensidad 30).
-- Ejemplo 2: 50 es un naranja cálido para la fogata (intensidad 80), ...etc.
->>>
+    Además de elegir los colores, proporcionarás la intensidad de cada uno en una escala de 0 a 100 para ajustar la iluminación de acuerdo con el impacto emocional de las palabras.
 
-La mejora en la selección de colores implica considerar no solo los elementos principales del ambiente (como el sol o la fogata) sino también incorporar un tercer elemento que complemente y enriquezca la ambientación, como el cielo, la vegetación, o elementos urbanos, dependiendo del contexto.
+    Ejemplos:
 
-Recuerda, el formato de tu respuesta es crucial y debe seguir la estructura: "Color1 Intensidad1, Color2 Intensidad2, Color3 Intensidad3".
-Input: ${input}
-Output:`,
+    Ejemplo 1:
+
+    Input: "Caminando por un sendero en un bosque frondoso, con la luz del sol filtrándose entre las hojas"
+    Output: "120 80, 100 70, 80 60"
+    Explicación: Se sugieren tres tonos de verde (verde brillante, verde lima, verde oliva) para representar la frescura y vitalidad del bosque. Las intensidades decrecientes reflejan la luz del sol que se filtra suavemente entre las hojas, creando un ambiente tranquilo y sereno.
+    Ejemplo 2:
+
+    Input: "Bailando bajo las luces de neón en una discoteca, con la música electrónica vibrando en el aire"
+    Output: "300 100, 315 90, 330 80"
+    Explicación: Se sugieren tres tonos de morado y rosa intensos (morado eléctrico, magenta vibrante, rosa neón) para capturar la energía y la emoción de bailar en una discoteca iluminada por luces de neón. Las altas intensidades reflejan la vibración y la euforia del ambiente.
+    Ejemplo 3:
+
+    Input: "Contemplando un atardecer en la montaña, con el cielo transformándose en un lienzo de colores cálidos"
+    Output: "20 80, 30 90, 40 100"
+    Explicación: Se sugieren tres tonos de naranja y amarillo (naranja rojizo, naranja brillante, amarillo dorado) para representar la calidez y la belleza de un atardecer en la montaña. Las intensidades crecientes reflejan la intensificación de los colores a medida que el sol se pone en el horizonte.
+    Ejemplo 4:
+
+    Input: "Sumergido en las profundidades del océano, rodeado de una tranquilidad azul y misteriosa"
+    Output: "180 90, 210 100, 240 80"
+    Explicación: Se sugieren tres tonos de azul (turquesa profundo, azul marino, azul oscuro) para evocar la sensación de estar sumergido en las profundidades del océano. Las intensidades variables representan la mezcla de tranquilidad y misterio que se encuentra bajo la superficie del agua.
+
+    Recuerda, el formato de tu respuesta es crucial y debe seguir la estructura: "Color1 Intensidad1, Color2 Intensidad2, Color3 Intensidad3".
+
+    Input: ${input}
+    Output:`,
       },
     ];
 
