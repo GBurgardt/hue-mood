@@ -46,12 +46,6 @@ const philipsHueTest = async () => {
   logWithTimestamp(chalk.green("Done!"));
 };
 
-// philipsHueTest().catch(error => {
-//   console.error("An error occurred:", error);
-// });
-
-//////////
-
 const moodSongTest = async () => {
   const hueService = new HueService(
     process.env.PHILIPS_HUE_KEY,
@@ -85,12 +79,6 @@ const moodSongTest = async () => {
   await hueService.updateLightColors(lights, colors);
   logWithTimestamp(chalk.green("Done!"));
 };
-
-// const processAgentResponse = response => {
-//   const colorPattern = /(\w+\s\d+)/g;
-//   const matches = response.match(colorPattern);
-//   return matches ? matches.map(match => match.split(" ")) : [];
-// };
 
 moodSongTest().catch(error => {
   console.error("An error occurred:", error);
