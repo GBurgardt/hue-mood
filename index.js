@@ -1,69 +1,11 @@
 #!/usr/bin/env node
-
 require("dotenv").config();
-const { firstAgent, secondAgent } = require("./gpt-service.js");
-const { api: hueApi } = require("node-hue-api").v3;
+
+const { firstAgent, secondAgent } = require("./src/gpt-service.js");
+const { HueService } = require("./src/hue-service.js");
+const { logWithTimestamp, logResponse } = require("./src/logger.js");
+const { processSecondAgentResponse } = require("./src/utils.js");
 const chalkOriginal = import("chalk").then(m => m.default);
-
-class HueService {
-  constructor(username, ipAddress) {
-    this.username = username;
-    this.ipAddress = ipAddress;
-    this.API = null;
-  }
-
-  async connect() {
-    this.API = await hueApi.createLocal(this.ipAddress).connect(this.username);
-  }
-
-  async setLightState(lightId, state) {
-    if (!this.API) {
-      throw new Error("HueService not connected. Call connect() first.");
-    }
-    return await this.API.lights.setLightState(lightId, state);
-  }
-
-  async getAllLights() {
-    if (!this.API) {
-      throw new Error("HueService not connected. Call connect() first.");
-    }
-    return await this.API.lights.getAll();
-  }
-}
-
-const logWithTimestamp = message => {
-  const timestamp = new Date().toLocaleTimeString();
-  console.log(`[${timestamp}] ${message}`);
-};
-
-const logResponse = async (agent, response) => {
-  const chalk = await chalkOriginal;
-  logWithTimestamp(chalk.blue(`${agent} Response: `) + chalk.green(response));
-};
-
-const parseColorIntensity = colorIntensity => {
-  const [color, intensity] = colorIntensity.trim().split(" ").map(Number);
-  return {
-    hue: Math.round((color / 360) * 65535),
-    brightness: Math.round((intensity / 100) * 254),
-  };
-};
-
-const updateLightColors = async (hueService, lights, colors) => {
-  const updatePromises = lights.slice(0, colors.length).map((light, index) => {
-    const { hue, brightness } = parseColorIntensity(colors[index]);
-    const state = { on: brightness > 0, bri: brightness, hue };
-    return hueService.setLightState(light.id, state);
-  });
-  await Promise.all(updatePromises);
-};
-
-const processSecondAgentResponse = response => {
-  const colorPattern =
-    /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
-  const match = response.match(colorPattern);
-  return match ? match[0].replace(/"/g, "").trim().split(",") : [];
-};
 
 const philipsHueTest = async () => {
   const hueService = new HueService(
@@ -99,7 +41,7 @@ const philipsHueTest = async () => {
     return;
   }
 
-  await updateLightColors(hueService, lights, colors);
+  await hueService.updateLightColors(lights, colors);
   logWithTimestamp(chalk.green("Done!"));
 };
 
