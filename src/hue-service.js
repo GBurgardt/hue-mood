@@ -19,14 +19,15 @@ class HueService {
     return await this.API.lights.setLightState(lightId, state);
   }
 
-  async getAllLights() {
-    if (!this.API) {
-      throw new Error("HueService not connected. Call connect() first.");
-    }
-    return await this.API.lights.getAll();
-  }
+  async updateLightColors(colors) {
+    const lights = await this.API.lights.getAll();
 
-  async updateLightColors(lights, colors) {
+    if (lights.length < 3) {
+      logWithTimestamp(
+        chalk.red("Error: Se necesitan al menos 3 focos para continuar.")
+      );
+      return;
+    }
     const updatePromises = lights
       .slice(0, colors.length)
       .map((light, index) => {

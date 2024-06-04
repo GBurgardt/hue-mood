@@ -33,7 +33,7 @@ Output:`,
   ];
 
   const body = {
-    model: "gpt-4-0613",
+    model: "gpt-4o",
     messages,
   };
 
@@ -85,7 +85,67 @@ Tu trabajo es perfeccionar estas respuestas, asegurándote de que los tres color
   ];
 
   const body = {
-    model: "gpt-4-0613",
+    model: "gpt-4o",
+    messages,
+  };
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+
+  if (data.choices && data.choices.length > 0) {
+    return data.choices[0].message.content;
+  } else {
+    console.log("data", data);
+    return "error";
+  }
+};
+
+// ###################
+const reactAgent = async inputPrompt => {
+  const url = "https://api.openai.com/v1/chat/completions";
+
+  const headers = {
+    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    "Content-Type": "application/json",
+  };
+
+  const messages = [
+    {
+      role: "user",
+      content: `
+      Eres un agente especializado en iluminación utiliza la técnica ReAct para determinar la configuración óptima de luces basándose en una descripción del ambiente proporcionada por el usuario. Sigues un proceso de razonamiento y acción, proponiendo iterativamente combinaciones de colores e intensidades hasta lograr la iluminación más adecuada para el entorno descrito.
+      Utilizas el siguiente círculo de colores como referencia:
+      {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}
+      Ejemplo:
+      - Pregunta: Estás en un bosque frondoso al atardecer, con el sol filtrándose entre las hojas de los árboles.
+      - Pensamiento: Para representar un bosque al atardecer, necesito considerar los colores cálidos del sol poniente, el verde de las hojas y posiblemente algunos tonos azulados para las sombras.
+      - Acción: Proponer[30 70, 120 50, 240 20]
+      - Observación: La combinación propuesta captura la calidez del atardecer con el naranja (30) a alta intensidad (70), el verde de las hojas (120) a intensidad media (50), y un toque de azul (240) a baja intensidad (20) para las sombras. Sin embargo, falta representar mejor la luz del sol filtrándose entre las hojas.
+      - Pensamiento: Para mejorar la representación de la luz solar filtrándose, debería incrementar la intensidad del amarillo y reducir un poco la del naranja y el verde.
+      - Acción: Proponer[60 80, 30 60, 120 40]
+      - Observación: Al aumentar la intensidad del amarillo (60) a 80 y reducir las intensidades del naranja (30) a 60 y el verde (120) a 40, se logra un mejor balance que captura la luz del sol filtrándose entre las hojas al atardecer.
+      - Pensamiento: La combinación actual representa adecuadamente el ambiente descrito, con un buen equilibrio entre la luz del sol, el follaje y las sombras.
+      - Acción: Finalizar[60 80, 30 60, 120 40]    
+      Este agente es unico y implementa ReAct, por lo tanto, la Acción SIEMPRE va a ser PROPONER nuevos colores! en un formato específico.
+      El formato es: 'color1 intensidad1, color2 intensidad2, color3 intensidad3'
+
+      - Pregunta: ${inputPrompt}
+      `,
+    },
+    {
+      role: "system",
+      content:
+        "Eres un agente especializado en iluminación utiliza la técnica ReAct para determinar la configuración óptima de luces basándose en una descripción del ambiente proporcionada por el usuario. El círculo de colores es: {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}.",
+    },
+  ];
+
+  const body = {
+    model: "gpt-4o",
     messages,
   };
 
