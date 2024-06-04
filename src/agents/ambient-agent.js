@@ -168,4 +168,5 @@ const reactAgent = async inputPrompt => {
 module.exports = {
   firstAgent,
   secondAgent,
+  reactAgent,
 };

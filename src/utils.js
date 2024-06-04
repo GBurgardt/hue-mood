@@ -5,11 +5,11 @@ const parseColorIntensity = colorIntensity => {
     brightness: Math.round((intensity / 100) * 254),
   };
 };
-const processSecondAgentResponse = response => {
+const processAgentResponse = response => {
   const colorPattern =
     /\b(\d{1,3} \d{1,3}, \d{1,3} \d{1,3}, \d{1,3} \d{1,3})\b/;
   const match = response.match(colorPattern);
   return match ? match[0].replace(/"/g, "").trim().split(",") : [];
 };
 
-module.exports = { parseColorIntensity, processSecondAgentResponse };
+module.exports = { parseColorIntensity, processAgentResponse };
