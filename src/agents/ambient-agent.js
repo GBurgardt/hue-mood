@@ -165,8 +165,62 @@ const reactAgent = async inputPrompt => {
   }
 };
 
+// #################
+
+const emotionalAgent = async inputPrompt => {
+  const url = "https://api.openai.com/v1/chat/completions";
+  const headers = {
+    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    "Content-Type": "application/json",
+  };
+  const messages = [
+    {
+      role: "user",
+      content: `
+        Eres un agente especializado en iluminación emocional que utiliza la técnica ReAct para determinar la configuración óptima de luces basándose en las emociones o el tono emocional expresado por el usuario. Interpretas el input del usuario y generas una combinación de colores e intensidades que refleje o complemente esas emociones.
+        Utilizas el siguiente círculo de colores como referencia:
+        {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}
+        Ejemplo:
+        - Pregunta: Me siento abrumado por la tristeza y la soledad después de una ruptura dolorosa. Todo parece oscuro y vacío.
+        - Pensamiento: La tristeza y la soledad profundas a menudo se asocian con colores fríos y oscuros, como el azul y el violeta. Para reflejar el vacío y la oscuridad emocional, debería proponer una combinación de colores en esa gama con intensidades bajas, y quizás un toque de color cálido a baja intensidad para simbolizar la esperanza.
+        - Acción: Proponer[240 60, 270 50, 30 10]
+        - Observación: La combinación propuesta captura la tristeza con un azul profundo (240) a intensidad media-alta (60), un violeta oscuro (270) a intensidad media (50) para representar la soledad, y un toque de naranja (30) a baja intensidad (10) como un destello de esperanza. Sin embargo, podría enfatizar aún más la sensación de vacío reduciendo las intensidades generales.
+        - Pensamiento: Para transmitir más efectivamente el vacío y la oscuridad emocional, reduciré las intensidades de los colores fríos y eliminaré el toque de color cálido, sumiendo el ambiente en una penumbra melancólica.
+        - Acción: Proponer[240 30, 270 20, 240 10]
+        - Observación: Al disminuir las intensidades del azul (240) a 30 y del violeta (270) a 20, y reemplazar el naranja por otro tono de azul (240) a intensidad muy baja (10), se crea una atmósfera de tristeza profunda y soledad, con apenas un tenue resplandor que evoca la inmensidad del vacío emocional.
+        - Pensamiento: Esta combinación de colores fríos y oscuros a bajas intensidades captura de manera efectiva las emociones de tristeza, soledad y vacío expresadas por el usuario, sumergiendo el ambiente en una penumbra melancólica que refleja el estado emocional descrito.
+        - Acción: Finalizar[240 30, 270 20, 240 10]
+        Este agente es único y implementa ReAct, por lo tanto, la Acción SIEMPRE será PROPONER nuevas combinaciones de colores que reflejen las emociones del usuario, en el formato 'color1 intensidad1, color2 intensidad2, color3 intensidad3'.
+        - Pregunta: ${inputPrompt}
+      `,
+    },
+    {
+      role: "system",
+      content:
+        "Eres un agente especializado en iluminación emocional que utiliza la técnica ReAct para determinar la configuración óptima de luces basándose en las emociones expresadas por el usuario. El círculo de colores es: {red: 0, orange: 30, yellow: 60, green: 120, cyan: 180, blue: 240, purple: 270, pink: 330}.",
+    },
+  ];
+  const body = {
+    model: "gpt-4o",
+    messages,
+  };
+  const response = await fetch(url, {
+    method: "POST",
+    headers: headers,
+    body: JSON.stringify(body),
+  });
+  const data = await response.json();
+  if (data.choices && data.choices.length > 0) {
+    return data.choices[0].message.content;
+  } else {
+    console.log("data", data);
+    return "error";
+  }
+};
+
 module.exports = {
   firstAgent,
   secondAgent,
   reactAgent,
+  emotionalAgent,
 };

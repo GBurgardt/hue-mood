@@ -6,6 +6,7 @@ const {
   firstAgent,
   secondAgent,
   reactAgent,
+  emotionalAgent,
 } = require("./src/agents/ambient-agent.js");
 const { HueService } = require("./src/hue-service.js");
 const { logWithTimestamp, logResponse } = require("./src/logger.js");
@@ -20,7 +21,10 @@ const philipsHueTest = async () => {
   await hueService.connect();
 
   const inputPrompt = process.argv[2];
+
   const reactAgentResponse = await reactAgent(inputPrompt);
+  // const reactAgentResponse = await emotionalAgent(inputPrompt);
+
   await logResponse("React Agent", `${reactAgentResponse}`);
 
   const colors = processAgentResponse(reactAgentResponse);
